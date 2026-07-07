@@ -7,9 +7,9 @@ const purchaseTemplate = require("../utils/templates/purchaseTemplate");
 const { generateInvoiceBuffer } = require("./invoiceController");
 const Course = require("../models/Course");
 
-console.log("KEY =>", process.env.RAZORPAY_KEY_ID);
+// console.log("KEY =>", process.env.RAZORPAY_KEY_ID);
 
-console.log("SECRET =>", process.env.RAZORPAY_KEY_SECRET);
+// console.log("SECRET =>", process.env.RAZORPAY_KEY_SECRET);
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
