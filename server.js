@@ -1,5 +1,5 @@
 require("dotenv").config();
-const dotenv = require("dotenv");
+// const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
@@ -17,7 +17,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const testRoutes = require("./routes/testRoutes");
 
-dotenv.config();
+// dotenv.config();
 
 connectDB();
 
@@ -60,10 +60,10 @@ app.use("/api/modules", moduleRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.get("/admins", async (req, res) => {
-  const admins = await Admin.find();
-  res.json(admins);
-});
+// app.get("/admins", async (req, res) => {
+//   const admins = await Admin.find();
+//   res.json(admins);
+// });
 app.get("/", (req, res) => {
   res.send("Backend Running");
 });
