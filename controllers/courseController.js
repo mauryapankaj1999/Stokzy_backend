@@ -1,46 +1,12 @@
 const Course = require("../models/Course");
-
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
+const cloudinary = require("../config/cloudinary");
 // Create Course
 const createCourse = async (req, res) => {
   try {
     const {
       title,
       slug,
-      // thumbnail,
-      shortDescription,
-      description,
-       category,
-      price,
-      discountPrice,
-      duration,
-      level,
-      status,
-      videoType,
-      videoUrl,
-      videoFile,
-    } = req.body;
-
-    const thumbnail = req.file
-  ? `/uploads/courses/${req.file.filename}`
-  : "";
-
-
-    const existingCourse = await Course.findOne({
-      slug,
-    });
-
-    if (existingCourse) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Course slug already exists",
-      });
-    }
-
-    const course = await Course.create({
-      title,
-      slug,
-      thumbnail,
       shortDescription,
       description,
       category,
@@ -51,8 +17,101 @@ const createCourse = async (req, res) => {
       status,
       videoType,
       videoUrl,
-      videoFile,
+    } = req.body;
+
+    // Check Slug
+    const existingCourse = await Course.findOne({
+      slug,
     });
+
+    if (existingCourse) {
+      return res.status(400).json({
+        success: false,
+        message: "Course slug already exists",
+      });
+    }
+
+    let thumbnail = "";
+    let thumbnailPublicId = "";
+
+    let videoFile = "";
+    let videoPublicId = "";
+
+    // ==========================
+    // Upload Thumbnail
+    // ==========================
+
+    if (req.files?.thumbnail?.[0]) {
+      const thumbnailUpload =
+        await uploadToCloudinary(
+          req.files.thumbnail[0].buffer,
+          "courses",
+          "image"
+        );
+
+      thumbnail =
+        thumbnailUpload.secure_url;
+
+      thumbnailPublicId =
+        thumbnailUpload.public_id;
+    }
+
+    // ==========================
+    // Upload Video
+    // ==========================
+
+    if (
+      videoType === "upload" &&
+      req.files?.videoFile?.[0]
+    ) {
+      const videoUpload =
+        await uploadToCloudinary(
+          req.files.videoFile[0].buffer,
+          "videos",
+          "video"
+        );
+
+      videoFile =
+        videoUpload.secure_url;
+
+      videoPublicId =
+        videoUpload.public_id;
+    }
+
+    // ==========================
+    // Create Course
+    // ==========================
+
+    const course =
+      await Course.create({
+        title,
+        slug,
+
+        thumbnail,
+        thumbnailPublicId,
+
+        shortDescription,
+        description,
+        category,
+
+        price,
+        discountPrice,
+
+        duration,
+        level,
+        status,
+
+        videoType,
+
+        videoUrl:
+          videoType === "url"
+            ? videoUrl
+            : "",
+
+        videoFile,
+
+        videoPublicId,
+      });
 
     res.status(201).json({
       success: true,
@@ -61,13 +120,14 @@ const createCourse = async (req, res) => {
       data: course,
     });
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
-
 // Get All Courses
 const getCourses = async (req, res) => {
   try {
@@ -166,28 +226,213 @@ const getSingleCourse =
   };
 
 // Update Course
-const updateCourse = async (
-  req,
-  res
-) => {
+// const updateCourse = async (
+//   req,
+//   res
+// ) => {
+//   try {
+//     const { id } = req.params;
+
+//     const course =
+//       await Course.findById(id);
+
+//     if (!course) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Course not found",
+//       });
+//     }
+
+//     // Delete old thumbnail
+//     if (
+//       req.files?.thumbnail?.[0] &&
+//       course.thumbnail
+//     ) {
+//       const publicId =
+//         course.thumbnail
+//           .split("/")
+//           .slice(-2)
+//           .join("/")
+//           .split(".")[0];
+
+//       await cloudinary.uploader.destroy(
+//         publicId
+//       );
+
+//       const thumbnailUpload =
+//         await uploadToCloudinary(
+//           req.files.thumbnail[0]
+//             .buffer,
+//           "courses",
+//           "image"
+//         );
+
+//       req.body.thumbnail =
+//         thumbnailUpload.secure_url;
+//     }
+
+//     // Delete old video
+//     if (
+//       req.files?.videoFile?.[0] &&
+//       course.videoFile
+//     ) {
+//       const publicId =
+//         course.videoFile
+//           .split("/")
+//           .slice(-2)
+//           .join("/")
+//           .split(".")[0];
+
+//       await cloudinary.uploader.destroy(
+//         publicId,
+//         {
+//           resource_type:
+//             "video",
+//         }
+//       );
+
+//       const videoUpload =
+//         await uploadToCloudinary(
+//           req.files.videoFile[0]
+//             .buffer,
+//           "videos",
+//           "video"
+//         );
+
+//       req.body.videoFile =
+//         videoUpload.secure_url;
+//     }
+
+//     const updatedCourse =
+//       await Course.findByIdAndUpdate(
+//         id,
+//         req.body,
+//         {
+//           new: true,
+//           runValidators: true,
+//         }
+//       );
+
+//     res.status(200).json({
+//       success: true,
+//       message:
+//         "Course updated successfully",
+//       data: updatedCourse,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+
+const updateCourse = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const course =
-      await Course.findById(id);
+    const course = await Course.findById(id);
 
     if (!course) {
       return res.status(404).json({
         success: false,
-        message:
-          "Course not found",
+        message: "Course not found",
       });
     }
+
+    const updateData = {
+      ...req.body,
+    };
+
+    // ==========================
+    // Update Thumbnail
+    // ==========================
+
+    if (req.files?.thumbnail?.[0]) {
+      // Delete old thumbnail
+      if (course.thumbnailPublicId) {
+        await cloudinary.uploader.destroy(
+          course.thumbnailPublicId
+        );
+      }
+
+      const thumbnailUpload =
+        await uploadToCloudinary(
+          req.files.thumbnail[0].buffer,
+          "courses",
+          "image"
+        );
+
+      updateData.thumbnail =
+        thumbnailUpload.secure_url;
+
+      updateData.thumbnailPublicId =
+        thumbnailUpload.public_id;
+    }
+
+    // ==========================
+    // Upload New Video
+    // ==========================
+
+    if (
+      updateData.videoType === "upload" &&
+      req.files?.videoFile?.[0]
+    ) {
+      // Delete old uploaded video
+      if (course.videoPublicId) {
+        await cloudinary.uploader.destroy(
+          course.videoPublicId,
+          {
+            resource_type: "video",
+          }
+        );
+      }
+
+      const videoUpload =
+        await uploadToCloudinary(
+          req.files.videoFile[0].buffer,
+          "videos",
+          "video"
+        );
+
+      updateData.videoFile =
+        videoUpload.secure_url;
+
+      updateData.videoPublicId =
+        videoUpload.public_id;
+
+      // Clear URL because upload mode is selected
+      updateData.videoUrl = "";
+    }
+
+    // ==========================
+    // Switch Upload -> URL
+    // ==========================
+
+    if (updateData.videoType === "url") {
+      // Delete uploaded video
+      if (course.videoPublicId) {
+        await cloudinary.uploader.destroy(
+          course.videoPublicId,
+          {
+            resource_type: "video",
+          }
+        );
+      }
+
+      updateData.videoFile = "";
+      updateData.videoPublicId = "";
+    }
+
+    // ==========================
+    // Update Course
+    // ==========================
 
     const updatedCourse =
       await Course.findByIdAndUpdate(
         id,
-        req.body,
+        updateData,
         {
           new: true,
           runValidators: true,
@@ -201,6 +446,8 @@ const updateCourse = async (
       data: updatedCourse,
     });
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: error.message,
