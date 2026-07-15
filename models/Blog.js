@@ -12,8 +12,11 @@ const blogSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
-    
+    imagePublicId: {
+      type: String,
+      default: "",
+    },
+        
     description: {
       type: String,
       required: true,
