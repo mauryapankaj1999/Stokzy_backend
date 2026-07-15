@@ -120,7 +120,10 @@ const createCourse = async (req, res) => {
       data: course,
     });
   } catch (error) {
-  console.log(error);
+   console.error("========== CREATE COURSE ERROR ==========");
+  console.error(error);
+  console.error(error.message);
+  console.error(error.stack);
 
   res.status(500).json({
     success: false,
