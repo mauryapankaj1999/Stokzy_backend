@@ -120,13 +120,13 @@ const createCourse = async (req, res) => {
       data: course,
     });
   } catch (error) {
-    console.log(error);
+  console.log(error);
 
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
+  res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 };
 // Get All Courses
 const getCourses = async (req, res) => {
