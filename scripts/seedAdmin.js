@@ -1,7 +1,7 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const Admin = require("../models/Admin");
+const User = require("../models/User");
 
 const run = async () => {
   const email = process.env.SEED_ADMIN_EMAIL;
@@ -17,13 +17,13 @@ const run = async () => {
 
   const hashed = await bcrypt.hash(password, 10);
 
-  const admin = await Admin.findOneAndUpdate(
+  const admin = await User.findOneAndUpdate(
     { email },
-    { email, password: hashed, name },
+    { email, password: hashed, name, role: "admin", status: "active" },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 
-  console.log("Admin upserted:", admin.email, admin._id.toString());
+  console.log("Admin user upserted:", admin.email, admin.role, admin._id.toString());
   await mongoose.disconnect();
   process.exit(0);
 };
