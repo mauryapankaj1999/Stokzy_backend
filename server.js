@@ -16,6 +16,7 @@ const lessonRoutes = require("./routes/lessonRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const testRoutes = require("./routes/testRoutes");
+const scheduleRoutes = require("./routes/scheduleRoutes");
 
 // dotenv.config();
 
@@ -60,6 +61,7 @@ app.use("/api/modules", moduleRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/schedules", scheduleRoutes);
 // app.get("/admins", async (req, res) => {
 //   const admins = await Admin.find();
 //   res.json(admins);
