@@ -16,6 +16,23 @@ const getSchedules = async (req, res) => {
   }
 };
 
+
+const getSingleSchedule = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const schedule = await Schedule.findById(id);
+
+    if (!schedule) {
+      return res.status(404).json({ success: false, message: "Schedule not found" });
+    }
+
+    res.status(200).json({ success: true, data: schedule });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 const createSchedule = async (req, res) => {
   try {
     const { name, date, time, whatsappLink } = req.body;
@@ -84,4 +101,5 @@ module.exports = {
   createSchedule,
   updateSchedule,
   deleteSchedule,
+  getSingleSchedule,
 };
